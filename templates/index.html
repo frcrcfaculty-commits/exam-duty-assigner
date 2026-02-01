@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-4xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
+            <p class="text-gray-500 mt-2">Monitor duty distribution across all departments.</p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{{ url_for('reset_duties_confirm') }}"
+                class="bg-orange-500 text-white hover:bg-orange-600 font-bold py-2 px-4 rounded-lg transition">
+                🔄 Reset Duties Only
+            </a>
+            <a href="{{ url_for('reset_confirm') }}"
+                class="bg-red-600 text-white hover:bg-red-700 font-bold py-2 px-4 rounded-lg transition">
+                🗑️ Reset All Data
+            </a>
+            <a href="{{ url_for('schedule') }}"
+                class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:bg-indigo-700 transition transform hover:-translate-y-0.5">
+                + Schedule Exam
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <p class="text-sm font-medium text-gray-500 uppercase">Total Faculty</p>
+            <p class="text-3xl font-bold text-gray-800 mt-2">{{ faculty|length }}</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <p class="text-sm font-medium text-gray-500 uppercase">Total Duties Assigned</p>
+            <p class="text-3xl font-bold text-indigo-600 mt-2">
+                {{ faculty|sum(attribute='total_duties_assigned') }}
+            </p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <p class="text-sm font-medium text-gray-500 uppercase">Active Departments</p>
+            <p class="text-3xl font-bold text-green-600 mt-2">
+                {{ faculty|map(attribute='department')|unique|list|length }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <h2 class="text-lg font-bold text-gray-700">Faculty Duty Leaderboard</h2>
+            <span class="text-xs text-gray-500 bg-white border px-2 py-1 rounded">Sorted by Duties (Least First
+                Recommended)</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider">
+                        <th class="px-6 py-3 font-medium">Rank</th>
+                        <th class="px-6 py-3 font-medium">Faculty Name</th>
+                        <th class="px-6 py-3 font-medium">Department</th>
+                        <th class="px-6 py-3 font-medium text-right">Total Duties</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for f in faculty|sort(attribute='total_duties_assigned') %} <!-- Sort ascending for view -->
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 text-gray-400 font-mono text-sm">#{{ loop.index }}</td>
+                        <td class="px-6 py-4 font-medium text-gray-800">{{ f.name }}</td>
+                        <td class="px-6 py-4 text-gray-500">
+                            <span class="px-2 py-1 bg-gray-100 rounded text-xs">{{ f.department }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <span
+                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold {{ 'bg-green-100 text-green-800' if f.total_duties_assigned == 0 else 'bg-indigo-100 text-indigo-800' }}">
+                                {{ f.total_duties_assigned }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center text-gray-400">
+                            No faculty data. <a href="{{ url_for('upload') }}"
+                                class="text-indigo-600 hover:underline">Upload CSVs</a> or generate dummy data.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

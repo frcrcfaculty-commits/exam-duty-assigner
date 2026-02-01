@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-md">
+    <h1 class="text-3xl font-bold mb-6 text-indigo-700">Schedule Exam Session</h1>
+
+    <form action="{{ url_for('schedule') }}" method="post" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
+                <input type="date" name="date" required
+                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2 border">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Exam Duration *</label>
+                <select name="exam_duration" required
+                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2 border">
+                    <option value="1">1 Hour</option>
+                    <option value="1.5">1.5 Hours</option>
+                    <option value="2" selected>2 Hours</option>
+                    <option value="3">3 Hours</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">How long is the exam?</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Start Time *</label>
+                <select name="start_time" required
+                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2 border">
+                    <option value="8.00am">8:00 AM</option>
+                    <option value="8.30am">8:30 AM</option>
+                    <option value="9.00am">9:00 AM</option>
+                    <option value="9.30am">9:30 AM</option>
+                    <option value="10.00am">10:00 AM</option>
+                    <option value="10.30am">10:30 AM</option>
+                    <option value="11.00am">11:00 AM</option>
+                    <option value="11.30am">11:30 AM</option>
+                    <option value="12.00pm">12:00 PM</option>
+                    <option value="12.30pm">12:30 PM</option>
+                    <option value="1.00pm">1:00 PM</option>
+                    <option value="1.30pm">1:30 PM</option>
+                    <option value="2.00pm">2:00 PM</option>
+                    <option value="2.30pm">2:30 PM</option>
+                    <option value="3.00pm">3:00 PM</option>
+                    <option value="3.30pm">3:30 PM</option>
+                    <option value="4.00pm">4:00 PM</option>
+                    <option value="4.30pm">4:30 PM</option>
+                    <option value="5.00pm">5:00 PM</option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">When does the exam begin?</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">End Time (Auto-calculated)</label>
+                <input type="text" id="end-time-display" disabled value="--"
+                    class="w-full bg-gray-100 border-gray-300 rounded-lg shadow-sm p-2 border text-gray-600">
+                <input type="hidden" name="end_time" id="end-time-hidden">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Number of Classrooms</label>
+                <input type="number" name="num_classrooms" min="1" value="1"
+                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2 border">
+                <p class="text-xs text-gray-500 mt-1">How many rooms?</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Required Invigilators *</label>
+                <input type="number" name="required_invigilators" min="1" value="2" required
+                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2 border">
+                <p class="text-xs text-gray-500 mt-1">Minimum needed.</p>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Spare Invigilators</label>
+                <input type="number" name="spare_invigilators" min="0" value="0"
+                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2 border">
+                <p class="text-xs text-gray-500 mt-1">Backup staff.</p>
+            </div>
+        </div>
+
+        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <p class="text-sm text-blue-800">
+                <strong>Note:</strong> Faculty with <span class="font-mono bg-blue-100 px-1 rounded">P1</span> priority
+                will be assigned <strong>last</strong> (protected).
+                Coordinators, Supervisors, HODs, and Principal are <strong>excluded</strong> from auto-assignment.
+            </p>
+        </div>
+
+        <button type="submit"
+            class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition shadow-lg">
+            Create Schedule & Assign Staff
+        </button>
+    </form>
+</div>
+
+<script>
+    // Time calculation helper - every 30 mins from 8 AM to 5 PM
+    const timeOptions = {
+        '8.00am': { hour: 8, minute: 0, display: '8:00 AM' },
+        '8.30am': { hour: 8, minute: 30, display: '8:30 AM' },
+        '9.00am': { hour: 9, minute: 0, display: '9:00 AM' },
+        '9.30am': { hour: 9, minute: 30, display: '9:30 AM' },
+        '10.00am': { hour: 10, minute: 0, display: '10:00 AM' },
+        '10.30am': { hour: 10, minute: 30, display: '10:30 AM' },
+        '11.00am': { hour: 11, minute: 0, display: '11:00 AM' },
+        '11.30am': { hour: 11, minute: 30, display: '11:30 AM' },
+        '12.00pm': { hour: 12, minute: 0, display: '12:00 PM' },
+        '12.30pm': { hour: 12, minute: 30, display: '12:30 PM' },
+        '1.00pm': { hour: 13, minute: 0, display: '1:00 PM' },
+        '1.30pm': { hour: 13, minute: 30, display: '1:30 PM' },
+        '2.00pm': { hour: 14, minute: 0, display: '2:00 PM' },
+        '2.30pm': { hour: 14, minute: 30, display: '2:30 PM' },
+        '3.00pm': { hour: 15, minute: 0, display: '3:00 PM' },
+        '3.30pm': { hour: 15, minute: 30, display: '3:30 PM' },
+        '4.00pm': { hour: 16, minute: 0, display: '4:00 PM' },
+        '4.30pm': { hour: 16, minute: 30, display: '4:30 PM' },
+        '5.00pm': { hour: 17, minute: 0, display: '5:00 PM' }
+    };
+
+    function calculateEndTime() {
+        const startTime = document.querySelector('select[name="start_time"]').value;
+        const duration = parseFloat(document.querySelector('select[name="exam_duration"]').value);
+
+        if (!startTime || !timeOptions[startTime]) return;
+
+        const start = timeOptions[startTime];
+        let endHour = start.hour + Math.floor(duration);
+        let endMinute = start.minute + (duration % 1) * 60;
+
+        // Handle minute overflow
+        if (endMinute >= 60) {
+            endHour += 1;
+            endMinute -= 60;
+        }
+
+        // Format end time
+        let period = 'am';
+        let displayHour = endHour;
+        if (endHour >= 12) {
+            period = 'pm';
+            if (endHour > 12) displayHour = endHour - 12;
+        }
+        if (endHour === 0) displayHour = 12;
+
+        const endTimeValue = `${displayHour}.${endMinute === 0 ? '00' : endMinute.toString().padStart(2, '0')}${period}`;
+        const endTimeDisplay = `${displayHour}:${endMinute === 0 ? '00' : endMinute.toString().padStart(2, '0')} ${period.toUpperCase()}`;
+
+        document.getElementById('end-time-display').value = endTimeDisplay;
+        document.getElementById('end-time-hidden').value = endTimeValue;
+    }
+
+    // Attach listeners
+    document.querySelector('select[name="start_time"]').addEventListener('change', calculateEndTime);
+    document.querySelector('select[name="exam_duration"]').addEventListener('change', calculateEndTime);
+
+    // Initial calculation
+    calculateEndTime();
+</script>
+{% endblock %}

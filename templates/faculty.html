@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-4xl font-bold text-gray-900 tracking-tight">Manage Faculty</h1>
+            <p class="text-gray-500 mt-2">Assign priorities and roles to faculty members.</p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{{ url_for('index') }}"
+                class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition">
+                ← Back to Dashboard
+            </a>
+            <a href="{{ url_for('export_data') }}"
+                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition">
+                📥 Export Backup
+            </a>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="bg-white p-4 rounded-lg shadow-sm mb-6 flex flex-wrap gap-6">
+        <div>
+            <span class="font-bold text-gray-700">Priority:</span>
+            <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 rounded text-xs">P3 = Available</span>
+            <span class="ml-1 px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">P2 = Moderate</span>
+            <span class="ml-1 px-2 py-1 bg-red-100 text-red-800 rounded text-xs">P1 = Protected</span>
+        </div>
+        <div>
+            <span class="font-bold text-gray-700">Role:</span>
+            <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">Invigilator</span>
+            <span class="ml-1 px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">Coordinator</span>
+            <span class="ml-1 px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">Supervisor</span>
+            <span class="ml-1 px-2 py-1 bg-pink-100 text-pink-800 rounded text-xs">HOD</span>
+            <span class="ml-1 px-2 py-1 bg-gray-700 text-white rounded text-xs">Principal</span>
+        </div>
+    </div>
+
+    <!-- Bulk Upload Section -->
+    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-lg shadow-sm mb-6 border border-indigo-100">
+        <h3 class="text-lg font-bold text-indigo-800 mb-3">📤 Bulk Upload Employees</h3>
+        <p class="text-sm text-gray-600 mb-4">
+            Upload a list of all employees (teaching & non-teaching) at once.
+            After uploading, manually assign roles and priorities below.
+        </p>
+        <form action="{{ url_for('bulk_upload_employees') }}" method="post" enctype="multipart/form-data"
+            class="flex flex-wrap gap-4 items-end">
+            <div class="flex-grow">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Employee List (CSV or Excel)</label>
+                <input type="file" name="employee_file" accept=".csv,.xlsx,.xls" required
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white">
+                <p class="text-xs text-gray-500 mt-1">
+                    File should have columns: <code class="bg-gray-100 px-1 rounded">Name</code>, <code
+                        class="bg-gray-100 px-1 rounded">Department</code> (optional)
+                </p>
+            </div>
+            <div>
+                <button type="submit"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                    Upload Employees
+                </button>
+            </div>
+        </form>
+        <div class="mt-3 text-xs text-gray-500">
+            <a href="{{ url_for('download_employee_template') }}" class="text-indigo-600 hover:underline">
+                📥 Download sample template
+            </a>
+        </div>
+    </div>
+
+    <!-- Manual Add Faculty Section -->
+    <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-lg shadow-sm mb-6 border border-green-100">
+        <h3 class="text-lg font-bold text-green-800 mb-3">➕ Add Faculty Manually</h3>
+        <form action="{{ url_for('add_faculty_manual') }}" method="post" class="flex flex-wrap gap-4 items-end">
+            <div class="flex-grow">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Faculty Name *</label>
+                <input type="text" name="name" required placeholder="e.g., Dr. John Smith"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div class="w-40">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                <input type="text" name="department" placeholder="e.g., CSE" value="General"
+                    class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            </div>
+            <div>
+                <button type="submit"
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                    Add Faculty
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+        <div class="flex flex-wrap gap-4 items-end">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Search Name</label>
+                <input type="text" id="filter-name" placeholder="Type to filter..."
+                    class="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                <select id="filter-department"
+                    class="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                    <option value="">All Departments</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept }}">{{ dept }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                <select id="filter-priority"
+                    class="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                    <option value="">All Priorities</option>
+                    <option value="P1">P1 - Protected</option>
+                    <option value="P2">P2 - Moderate</option>
+                    <option value="P3">P3 - Available</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <select id="filter-role"
+                    class="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                    <option value="">All Roles</option>
+                    <option value="INVIGILATOR">Invigilator</option>
+                    <option value="COORDINATOR">Coordinator</option>
+                    <option value="SUPERVISOR">Supervisor</option>
+                    <option value="HOD">HOD</option>
+                    <option value="PRINCIPAL">Principal</option>
+                </select>
+            </div>
+            <div>
+                <button onclick="clearFilters()"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm">
+                    Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Faculty Table -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left" id="faculty-table">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider">
+                        <th class="px-6 py-3 font-medium">#</th>
+                        <th class="px-6 py-3 font-medium">Faculty Name</th>
+                        <th class="px-6 py-3 font-medium">Department</th>
+                        <th class="px-6 py-3 font-medium">Duties</th>
+                        <th class="px-6 py-3 font-medium">Priority</th>
+                        <th class="px-6 py-3 font-medium">Role</th>
+                        <th class="px-6 py-3 font-medium text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for f in faculty %}
+                    <tr class="hover:bg-gray-50 transition faculty-row" id="row-{{ f.id }}"
+                        data-name="{{ f.name|lower }}" data-department="{{ f.department }}"
+                        data-priority="{{ f.priority }}" data-role="{{ f.role }}">
+                        <td class="px-6 py-4 text-gray-400 font-mono text-sm">{{ loop.index }}</td>
+                        <td class="px-6 py-4 font-medium text-gray-800">{{ f.name }}</td>
+                        <td class="px-6 py-4">
+                            <input type="text" name="department" data-faculty-id="{{ f.id }}" value="{{ f.department }}"
+                                class="dept-input border border-gray-300 rounded px-2 py-1 text-sm w-32 focus:ring-2 focus:ring-indigo-500">
+                        </td>
+                        <td class="px-6 py-4 text-gray-600">{{ f.total_duties_assigned }}</td>
+                        <td class="px-6 py-4">
+                            <select name="priority" data-faculty-id="{{ f.id }}"
+                                class="priority-select border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="P3" {% if f.priority=='P3' %}selected{% endif %}>P3 - Available</option>
+                                <option value="P2" {% if f.priority=='P2' %}selected{% endif %}>P2 - Moderate</option>
+                                <option value="P1" {% if f.priority=='P1' %}selected{% endif %}>P1 - Protected</option>
+                            </select>
+                        </td>
+                        <td class="px-6 py-4">
+                            <select name="role" data-faculty-id="{{ f.id }}"
+                                class="role-select border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="INVIGILATOR" {% if f.role=='INVIGILATOR' %}selected{% endif %}>
+                                    Invigilator</option>
+                                <option value="COORDINATOR" {% if f.role=='COORDINATOR' %}selected{% endif %}>
+                                    Coordinator</option>
+                                <option value="SUPERVISOR" {% if f.role=='SUPERVISOR' %}selected{% endif %}>Supervisor
+                                </option>
+                                <option value="HOD" {% if f.role=='HOD' %}selected{% endif %}>HOD</option>
+                                <option value="PRINCIPAL" {% if f.role=='PRINCIPAL' %}selected{% endif %}>Principal
+                                </option>
+                            </select>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <button onclick="saveFaculty({{ f.id }})"
+                                class="save-btn bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-3 py-1 rounded transition">
+                                Save
+                            </button>
+                            <span id="status-{{ f.id }}" class="ml-2 text-green-600 text-sm hidden">✓ Saved</span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-gray-400">
+                            No faculty found. <a href="{{ url_for('upload') }}"
+                                class="text-indigo-600 hover:underline">Upload timetables</a> first.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-4 text-sm text-gray-500">
+        Showing <span id="visible-count">{{ faculty|length }}</span> of {{ faculty|length }} faculty members
+    </div>
+</div>
+
+<script>
+    function saveFaculty(facultyId) {
+        const row = document.getElementById('row-' + facultyId);
+        const department = row.querySelector('.dept-input').value;
+        const priority = row.querySelector('.priority-select').value;
+        const role = row.querySelector('.role-select').value;
+        const statusEl = document.getElementById('status-' + facultyId);
+        const saveBtn = row.querySelector('.save-btn');
+
+        saveBtn.textContent = 'Saving...';
+        saveBtn.disabled = true;
+
+        fetch('/faculty/' + facultyId + '/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ department: department, priority: priority, role: role })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    statusEl.classList.remove('hidden');
+                    // Update data attributes for filtering
+                    row.dataset.department = department;
+                    row.dataset.priority = priority;
+                    row.dataset.role = role;
+                    setTimeout(() => statusEl.classList.add('hidden'), 2000);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(err => {
+                alert('Network error: ' + err);
+            })
+            .finally(() => {
+                saveBtn.textContent = 'Save';
+                saveBtn.disabled = false;
+            });
+    }
+
+    function applyFilters() {
+        const nameFilter = document.getElementById('filter-name').value.toLowerCase();
+        const deptFilter = document.getElementById('filter-department').value;
+        const priorityFilter = document.getElementById('filter-priority').value;
+        const roleFilter = document.getElementById('filter-role').value;
+
+        const rows = document.querySelectorAll('.faculty-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const name = row.dataset.name;
+            const dept = row.dataset.department;
+            const priority = row.dataset.priority;
+            const role = row.dataset.role;
+
+            const matchName = !nameFilter || name.includes(nameFilter);
+            const matchDept = !deptFilter || dept === deptFilter;
+            const matchPriority = !priorityFilter || priority === priorityFilter;
+            const matchRole = !roleFilter || role === roleFilter;
+
+            if (matchName && matchDept && matchPriority && matchRole) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        document.getElementById('visible-count').textContent = visibleCount;
+    }
+
+    function clearFilters() {
+        document.getElementById('filter-name').value = '';
+        document.getElementById('filter-department').value = '';
+        document.getElementById('filter-priority').value = '';
+        document.getElementById('filter-role').value = '';
+        applyFilters();
+    }
+
+    // Attach filter listeners
+    document.getElementById('filter-name').addEventListener('input', applyFilters);
+    document.getElementById('filter-department').addEventListener('change', applyFilters);
+    document.getElementById('filter-priority').addEventListener('change', applyFilters);
+    document.getElementById('filter-role').addEventListener('change', applyFilters);
+</script>
+{% endblock %}

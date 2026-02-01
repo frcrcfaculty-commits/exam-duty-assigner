@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Print-optimized Duty Sheet -->
+    <div class="bg-white p-8 rounded-xl shadow-md print:shadow-none print:rounded-none" id="duty-sheet">
+
+        <!-- College Header -->
+        <div class="text-center border-b-2 border-black pb-4 mb-6">
+            <h1 class="text-2xl font-bold uppercase tracking-wide">Father Agnels College (Autonomous)</h1>
+            <p class="text-lg font-semibold mt-2">Exam Supervisor Duty Sheet</p>
+        </div>
+
+        <!-- Exam Details -->
+        <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
+            <div>
+                <p><strong>Date:</strong> {{ exam.date }}</p>
+                <p><strong>Day:</strong> {{ exam.day_of_week }}</p>
+            </div>
+            <div class="text-right">
+                <p><strong>Time:</strong> {{ exam.start_time }} - {{ exam.end_time }}</p>
+                <p><strong>Session ID:</strong> #{{ exam.id }}</p>
+            </div>
+        </div>
+
+        {% if exam.num_classrooms %}
+        <div class="mb-6 text-sm">
+            <p><strong>Number of Classrooms:</strong> {{ exam.num_classrooms }}</p>
+            <p><strong>Required Invigilators:</strong> {{ exam.required_invigilators }} (incl. {{
+                exam.spare_invigilators }} spare)</p>
+        </div>
+        {% endif %}
+
+        <!-- Duty Table -->
+        <table class="w-full border-collapse border border-black text-sm">
+            <thead>
+                <tr class="bg-gray-100">
+                    <th class="border border-black px-3 py-2 text-center w-16">Sr. No.</th>
+                    <th class="border border-black px-3 py-2 text-left">Name of the Faculty</th>
+                    <th class="border border-black px-3 py-2 text-left">Room Number</th>
+                    <th class="border border-black px-3 py-2 text-center w-32">Signature</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for staff in assigned_faculty %}
+                <tr class="{% if loop.index is odd %}bg-white{% else %}bg-gray-50{% endif %}">
+                    <td class="border border-black px-3 py-3 text-center">{{ loop.index }}</td>
+                    <td class="border border-black px-3 py-3">{{ staff.name }}</td>
+                    <td class="border border-black px-3 py-3">&nbsp;</td>
+                    <td class="border border-black px-3 py-3">&nbsp;</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="border border-black px-3 py-6 text-center text-gray-500">
+                        No invigilators assigned. Check availability or requirements.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Footer Section -->
+        <div class="mt-8 grid grid-cols-2 gap-8 text-sm">
+            <div>
+                <p class="border-t border-black pt-1 mt-12 text-center">Exam Cell Coordinator</p>
+            </div>
+            <div>
+                <p class="border-t border-black pt-1 mt-12 text-center">Principal</p>
+            </div>
+        </div>
+
+        <div class="mt-6 text-xs text-gray-500 text-center print:hidden">
+            Generated on {{ now }} | Father Agnel - Exam Duty Assigner
+        </div>
+    </div>
+
+    <!-- Action Buttons (hidden when printing) -->
+    <div class="mt-6 flex justify-between print:hidden">
+        <a href="{{ url_for('index') }}"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg transition">
+            ← Back to Dashboard
+        </a>
+        <div class="space-x-3">
+            <a href="{{ url_for('export_duty_sheet', exam_id=exam.id) }}"
+                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                📥 Download Excel
+            </a>
+            <button onclick="window.print()"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                🖨️ Print / PDF
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Print Styles -->
+<style>
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+
+        #duty-sheet,
+        #duty-sheet * {
+            visibility: visible;
+        }
+
+        #duty-sheet {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .print\\:hidden {
+            display: none !important;
+        }
+
+        table {
+            page-break-inside: avoid;
+        }
+    }
+</style>
+{% endblock %}
