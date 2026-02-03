@@ -17,7 +17,7 @@
                 🗑️ Reset All Data
             </a>
             <a href="{{ url_for('schedule') }}"
-                class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:bg-indigo-700 transition transform hover:-translate-y-0.5">
+                class="bg-crce-primary text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:bg-crce-secondary transition transform hover:-translate-y-0.5">
                 + Schedule Exam
             </a>
         </div>
@@ -31,7 +31,7 @@
         </div>
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
             <p class="text-sm font-medium text-gray-500 uppercase">Total Duties Assigned</p>
-            <p class="text-3xl font-bold text-indigo-600 mt-2">
+            <p class="text-3xl font-bold text-crce-primary mt-2">
                 {{ faculty|sum(attribute='total_duties_assigned') }}
             </p>
         </div>
@@ -71,7 +71,7 @@
                         </td>
                         <td class="px-6 py-4 text-right">
                             <span
-                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold {{ 'bg-green-100 text-green-800' if f.total_duties_assigned == 0 else 'bg-indigo-100 text-indigo-800' }}">
+                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold {{ 'bg-green-100 text-green-800' if f.total_duties_assigned == 0 else 'bg-crce-light text-crce-dark' }}">
                                 {{ f.total_duties_assigned }}
                             </span>
                         </td>
@@ -80,7 +80,7 @@
                     <tr>
                         <td colspan="4" class="px-6 py-12 text-center text-gray-400">
                             No faculty data. <a href="{{ url_for('upload') }}"
-                                class="text-indigo-600 hover:underline">Upload CSVs</a> or generate dummy data.
+                                class="text-crce-primary hover:underline">Upload CSVs</a> or generate dummy data.
                         </td>
                     </tr>
                     {% endfor %}

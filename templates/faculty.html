@@ -38,8 +38,8 @@
     </div>
 
     <!-- Bulk Upload Section -->
-    <div class="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-lg shadow-sm mb-6 border border-indigo-100">
-        <h3 class="text-lg font-bold text-indigo-800 mb-3">📤 Bulk Upload Employees</h3>
+    <div class="bg-gradient-to-r from-crce-light to-purple-50 p-6 rounded-lg shadow-sm mb-6 border border-crce-light">
+        <h3 class="text-lg font-bold text-crce-dark mb-3">📤 Bulk Upload Employees</h3>
         <p class="text-sm text-gray-600 mb-4">
             Upload a list of all employees (teaching & non-teaching) at once.
             After uploading, manually assign roles and priorities below.
@@ -57,13 +57,13 @@
             </div>
             <div>
                 <button type="submit"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg transition">
+                    class="bg-crce-primary hover:bg-crce-secondary text-white font-bold py-2 px-6 rounded-lg transition">
                     Upload Employees
                 </button>
             </div>
         </form>
         <div class="mt-3 text-xs text-gray-500">
-            <a href="{{ url_for('download_employee_template') }}" class="text-indigo-600 hover:underline">
+            <a href="{{ url_for('download_employee_template') }}" class="text-crce-primary hover:underline">
                 📥 Download sample template
             </a>
         </div>
@@ -98,12 +98,12 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Search Name</label>
                 <input type="text" id="filter-name" placeholder="Type to filter..."
-                    class="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                    class="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-crce-primary">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
                 <select id="filter-department"
-                    class="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                    class="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-crce-primary">
                     <option value="">All Departments</option>
                     {% for dept in departments %}
                     <option value="{{ dept }}">{{ dept }}</option>
@@ -113,7 +113,7 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
                 <select id="filter-priority"
-                    class="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                    class="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-crce-primary">
                     <option value="">All Priorities</option>
                     <option value="P1">P1 - Protected</option>
                     <option value="P2">P2 - Moderate</option>
@@ -123,7 +123,7 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
                 <select id="filter-role"
-                    class="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                    class="border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-crce-primary">
                     <option value="">All Roles</option>
                     <option value="INVIGILATOR">Invigilator</option>
                     <option value="COORDINATOR">Coordinator</option>
@@ -165,12 +165,12 @@
                         <td class="px-6 py-4 font-medium text-gray-800">{{ f.name }}</td>
                         <td class="px-6 py-4">
                             <input type="text" name="department" data-faculty-id="{{ f.id }}" value="{{ f.department }}"
-                                class="dept-input border border-gray-300 rounded px-2 py-1 text-sm w-32 focus:ring-2 focus:ring-indigo-500">
+                                class="dept-input border border-gray-300 rounded px-2 py-1 text-sm w-32 focus:ring-2 focus:ring-crce-primary">
                         </td>
                         <td class="px-6 py-4 text-gray-600">{{ f.total_duties_assigned }}</td>
                         <td class="px-6 py-4">
                             <select name="priority" data-faculty-id="{{ f.id }}"
-                                class="priority-select border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                class="priority-select border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-crce-primary focus:border-crce-primary">
                                 <option value="P3" {% if f.priority=='P3' %}selected{% endif %}>P3 - Available</option>
                                 <option value="P2" {% if f.priority=='P2' %}selected{% endif %}>P2 - Moderate</option>
                                 <option value="P1" {% if f.priority=='P1' %}selected{% endif %}>P1 - Protected</option>
@@ -178,7 +178,7 @@
                         </td>
                         <td class="px-6 py-4">
                             <select name="role" data-faculty-id="{{ f.id }}"
-                                class="role-select border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                class="role-select border border-gray-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-crce-primary focus:border-crce-primary">
                                 <option value="INVIGILATOR" {% if f.role=='INVIGILATOR' %}selected{% endif %}>
                                     Invigilator</option>
                                 <option value="COORDINATOR" {% if f.role=='COORDINATOR' %}selected{% endif %}>
@@ -192,7 +192,7 @@
                         </td>
                         <td class="px-6 py-4 text-center">
                             <button onclick="saveFaculty({{ f.id }})"
-                                class="save-btn bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-3 py-1 rounded transition">
+                                class="save-btn bg-crce-primary hover:bg-crce-secondary text-white text-sm px-3 py-1 rounded transition">
                                 Save
                             </button>
                             <span id="status-{{ f.id }}" class="ml-2 text-green-600 text-sm hidden">✓ Saved</span>
@@ -202,7 +202,7 @@
                     <tr>
                         <td colspan="7" class="px-6 py-12 text-center text-gray-400">
                             No faculty found. <a href="{{ url_for('upload') }}"
-                                class="text-indigo-600 hover:underline">Upload timetables</a> first.
+                                class="text-crce-primary hover:underline">Upload timetables</a> first.
                         </td>
                     </tr>
                     {% endfor %}

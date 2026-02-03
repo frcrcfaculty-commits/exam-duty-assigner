@@ -4,9 +4,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Father Agnel - Exam Duty Assigner</title>
+  <title>Fr. CRCE - Exam Duty Assigner</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Add some custom animations/polish -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            crce: {
+              primary: '#8B1538',    // Maroon
+              secondary: '#C41E3A',  // Cardinal red
+              dark: '#5C0F25',       // Dark maroon
+              light: '#F5E6EA',      // Light pink
+              accent: '#DAA520',     // Gold
+            }
+          }
+        }
+      }
+    }
+  </script>
   <style>
     .fade-in {
       animation: fadeIn 0.5s ease-in;
@@ -25,20 +41,38 @@
 </head>
 
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+  <!-- Header with College Identity -->
+  <header class="bg-crce-primary text-white">
+    <div class="container mx-auto px-6 py-2 text-center text-xs">
+      <span class="opacity-80">Society of St. Francis Xavier, Pilar's</span>
+      <span class="mx-2">|</span>
+      <span class="opacity-80">An Autonomous Institution Under The University of Mumbai</span>
+      <span class="mx-2">|</span>
+      <span class="text-crce-accent font-semibold">NAAC 'A' Grade</span>
+    </div>
+  </header>
+
   <!-- Navbar -->
-  <nav class="bg-indigo-600 text-white shadow-lg">
+  <nav class="bg-crce-dark text-white shadow-lg">
     <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-      <a href="{{ url_for('index') }}" class="flex items-center space-x-3 hover:text-indigo-200 transition">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="h-10 w-10 rounded-full bg-white p-1">
-        <span class="text-2xl font-bold tracking-tight">Father Agnel</span>
+      <a href="{{ url_for('index') }}" class="flex items-center space-x-3 hover:text-crce-accent transition">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Fr. CRCE Logo"
+          class="h-12 w-12 rounded-full bg-white p-1 border-2 border-crce-accent">
+        <div class="flex flex-col">
+          <span class="text-xl font-bold tracking-tight">Fr. CRCE</span>
+          <span class="text-xs opacity-75">Exam Duty Assigner</span>
+        </div>
       </a>
       <div class="space-x-4">
-        <a href="{{ url_for('index') }}" class="hover:bg-indigo-700 px-3 py-2 rounded transition">Dashboard</a>
-        <a href="{{ url_for('faculty_list') }}" class="hover:bg-indigo-700 px-3 py-2 rounded transition">Manage
+        <a href="{{ url_for('index') }}" class="hover:bg-crce-secondary px-3 py-2 rounded transition">Dashboard</a>
+        <a href="{{ url_for('faculty_list') }}" class="hover:bg-crce-secondary px-3 py-2 rounded transition">Manage
           Faculty</a>
-        <a href="{{ url_for('upload') }}" class="hover:bg-indigo-700 px-3 py-2 rounded transition">Upload Timetables</a>
-        <a href="{{ url_for('schedule') }}" class="hover:bg-indigo-700 px-3 py-2 rounded transition">Schedule Exam</a>
-        <a href="{{ url_for('import_data') }}" class="hover:bg-indigo-700 px-3 py-2 rounded transition">📥 Import</a>
+        <a href="{{ url_for('upload') }}" class="hover:bg-crce-secondary px-3 py-2 rounded transition">Upload
+          Timetables</a>
+        <a href="{{ url_for('schedule') }}" class="hover:bg-crce-secondary px-3 py-2 rounded transition">Schedule
+          Exam</a>
+        <a href="{{ url_for('import_data') }}" class="hover:bg-crce-secondary px-3 py-2 rounded transition">📥
+          Import</a>
       </div>
     </div>
   </nav>
@@ -62,9 +96,13 @@
   </main>
 
   <!-- Footer -->
-  <footer class="bg-white border-t mt-12 py-6 text-center text-gray-500 text-sm">
-    <p>&copy; 2026 Father Agnel - Exam Duty Assigner. Built with ❤️</p>
-    <p class="mt-1 text-indigo-600">Gift for Merley Ma'am. Made by Hansal Gandhi and Sherly Arockia</p>
+  <footer class="bg-crce-dark text-white mt-12 py-6">
+    <div class="container mx-auto px-6 text-center">
+      <p class="font-semibold">Fr. Conceicao Rodrigues College of Engineering</p>
+      <p class="text-sm opacity-75 mt-1">Fr. Agnel Ashram, Bandstand, Bandra (W), Mumbai - 400 050</p>
+      <p class="text-xs mt-3 opacity-60">&copy; 2026 Fr. CRCE - Exam Duty Assigner</p>
+      <p class="text-xs mt-1 text-crce-accent">Gift for Merley Ma'am. Made by Hansal Gandhi and Sherly Arockia</p>
+    </div>
   </footer>
 </body>
 
