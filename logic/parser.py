@@ -1,6 +1,6 @@
 """
-Parser for Block-Structured Department Timetable Files
-Handles both CSV and Excel files (.xlsx, .xls)
+Parser for Department Timetable Files
+Handles CSV, Excel (.xlsx, .xls), and Word (.docx) files
 """
 
 import pandas as pd
@@ -10,9 +10,10 @@ def parse_department_file(filepath, department_name=None):
     """
     Parses a timetable file and updates the database.
     
-    Supports TWO formats:
+    Supports these formats:
     1. Simple Table Format: Columns like Professor, Department, Day, Time
     2. Block Format: "NAME OF THE FACULTY" markers with day rows
+    3. Word Document (.docx): Tables with faculty initials in timetable grids
     
     For Excel files with multiple sheets, each sheet is processed.
     """
@@ -21,7 +22,14 @@ def parse_department_file(filepath, department_name=None):
     timetable_count = 0
     
     try:
-        if filepath.lower().endswith('.xlsx') or filepath.lower().endswith('.xls'):
+        # Handle Word documents
+        if filepath.lower().endswith('.docx'):
+            print(f"[PARSER] Processing Word document")
+            fc, tc = _parse_docx_timetable(filepath, department_name)
+            faculty_count += fc
+            timetable_count += tc
+            
+        elif filepath.lower().endswith('.xlsx') or filepath.lower().endswith('.xls'):
             # Excel file - process all sheets
             xl = pd.ExcelFile(filepath)
             for sheet_name in xl.sheet_names:
@@ -67,6 +75,120 @@ def parse_department_file(filepath, department_name=None):
     
     print(f"[PARSER] Total: {faculty_count} faculty, {timetable_count} timetable entries")
     return faculty_count > 0 or timetable_count > 0
+
+
+def _parse_docx_timetable(filepath, department_name=None):
+    """
+    Parses a Word document (.docx) containing timetable tables.
+    Extracts faculty initials/names and their busy time slots.
+    """
+    try:
+        from docx import Document
+    except ImportError:
+        print("[PARSER] python-docx not installed. Run: pip install python-docx")
+        return 0, 0
+    
+    faculty_count = 0
+    timetable_count = 0
+    faculty_set = set()  # Track unique faculty initials
+    
+    doc = Document(filepath)
+    print(f"[PARSER] Found {len(doc.tables)} tables in document")
+    
+    days_list = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"]
+    
+    for table_idx, table in enumerate(doc.tables):
+        if len(table.rows) < 3:
+            continue
+            
+        print(f"[PARSER] Processing table {table_idx + 1}")
+        
+        # Try to extract time slots from header row (usually row 2)
+        time_slots = {}
+        header_row_idx = 2
+        if len(table.rows) > header_row_idx:
+            for col_idx, cell in enumerate(table.rows[header_row_idx].cells):
+                cell_text = cell.text.strip()
+                if 'a.m' in cell_text.lower() or 'p.m' in cell_text.lower():
+                    # Normalize time format
+                    time_str = cell_text.replace('\n', ' ').strip()
+                    time_slots[col_idx] = time_str
+        
+        # Process data rows (look for day names)
+        for row_idx, row in enumerate(table.rows):
+            if row_idx < 3:  # Skip header rows
+                continue
+                
+            # Check first cells for day name
+            first_cell = row.cells[0].text.strip().upper()
+            day_name = None
+            for day in days_list:
+                if day in first_cell:
+                    day_name = day
+                    break
+            
+            if not day_name:
+                continue
+            
+            # Look for faculty initials in cells (usually 2-4 uppercase letters)
+            for col_idx, cell in enumerate(row.cells):
+                cell_text = cell.text.strip()
+                
+                # Skip empty, breaks, room numbers, etc.
+                if not cell_text or 'break' in cell_text.lower():
+                    continue
+                if cell_text.startswith('B') and '-' in cell_text:  # Room number like B1-208
+                    continue
+                if day_name in cell_text.upper():  # Skip day name cells
+                    continue
+                    
+                # Extract faculty initials (2-4 uppercase letters)
+                lines = cell_text.split('\n')
+                for line in lines:
+                    line = line.strip()
+                    # Check if it looks like faculty initials
+                    if len(line) >= 2 and len(line) <= 5 and line.isupper() and line.isalpha():
+                        faculty_initial = line
+                        
+                        if faculty_initial not in faculty_set:
+                            # Create faculty record
+                            existing = Faculty.query.filter_by(name=faculty_initial).first()
+                            if not existing:
+                                dept = department_name or "General"
+                                faculty = Faculty(
+                                    name=faculty_initial, 
+                                    department=dept, 
+                                    total_duties_assigned=0
+                                )
+                                db.session.add(faculty)
+                                db.session.commit()
+                                faculty_count += 1
+                                print(f"[PARSER] Created faculty: {faculty_initial}")
+                            faculty_set.add(faculty_initial)
+                        
+                        # Add timetable entry if we have time slot info
+                        time_str = time_slots.get(col_idx, "Unknown")
+                        faculty_obj = Faculty.query.filter_by(name=faculty_initial).first()
+                        if faculty_obj:
+                            existing_tt = Timetable.query.filter_by(
+                                faculty_id=faculty_obj.id,
+                                day_of_week=day_name,
+                                time_slot=time_str
+                            ).first()
+                            
+                            if not existing_tt:
+                                tt = Timetable(
+                                    faculty_id=faculty_obj.id,
+                                    day_of_week=day_name,
+                                    time_slot=time_str,
+                                    is_busy=True
+                                )
+                                db.session.add(tt)
+                                timetable_count += 1
+    
+    db.session.commit()
+    print(f"[PARSER] DOCX: {faculty_count} faculty, {timetable_count} timetable entries")
+    return faculty_count, timetable_count
 
 
 def _parse_simple_table(df, department_override=None):

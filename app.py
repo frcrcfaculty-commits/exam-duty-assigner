@@ -238,11 +238,15 @@ def schedule():
             required = int(required_str)
             num_classrooms = int(num_classrooms_str) if num_classrooms_str else 1
             spare = int(spare_str) if spare_str else 0
-            duration = int(exam_duration) if exam_duration else 1
+            duration = float(exam_duration) if exam_duration else 1.0
             if required < 1:
-                raise ValueError("Must be at least 1")
-        except ValueError:
-            flash("All numeric fields must be positive numbers.", "error")
+                raise ValueError("Required invigilators must be at least 1")
+            if num_classrooms < 1:
+                raise ValueError("Classrooms must be at least 1")
+            if spare < 0:
+                raise ValueError("Spare invigilators cannot be negative")
+        except ValueError as e:
+            flash(f"Invalid input: {str(e)}. All numeric fields must be valid.", "error")
             return redirect(url_for('schedule'))
         
         # Determine day of week from date
