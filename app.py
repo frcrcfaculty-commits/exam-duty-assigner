@@ -17,7 +17,17 @@ import json
 # ============================================================================
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///exam_system.db'
+# On Vercel the code directory is read-only: keep the demo DB in /tmp,
+# seeded from the bundled demo snapshot on each cold start.
+if os.environ.get('VERCEL'):
+    import shutil
+    _db = '/tmp/exam_system.db'
+    _seed = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'demo_seed.db')
+    if not os.path.exists(_db) and os.path.exists(_seed):
+        shutil.copyfile(_seed, _db)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + _db
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///exam_system.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'super_secret_key_for_demo_change_in_production'
 
@@ -61,7 +71,7 @@ def upload():
                 
                 if filename_lower.endswith('.csv') or filename_lower.endswith('.xlsx') or filename_lower.endswith('.xls'):
                     # Ensure uploads directory exists
-                    upload_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+                    upload_dir = '/tmp/uploads' if os.environ.get('VERCEL') else os.path.join(os.path.dirname(__file__), 'uploads')
                     os.makedirs(upload_dir, exist_ok=True)
                     
                     # Save file temporarily
@@ -717,7 +727,7 @@ def import_data():
 
 if __name__ == '__main__':
     # Ensure uploads directory exists
-    upload_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+    upload_dir = '/tmp/uploads' if os.environ.get('VERCEL') else os.path.join(os.path.dirname(__file__), 'uploads')
     os.makedirs(upload_dir, exist_ok=True)
     
     # Create database tables
